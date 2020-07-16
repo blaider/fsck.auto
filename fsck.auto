@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 #echo $*
 for idx in 0 $(seq $#); do
     name=`eval echo -n "$"$idx`
