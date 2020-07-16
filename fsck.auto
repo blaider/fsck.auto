@@ -1,0 +1,19 @@
+#/bin/bash
+#echo $*
+for idx in 0 $(seq $#); do
+    name=`eval echo -n "$"$idx`
+    if [ -b $name ];then
+	DEVNODE=$name
+    fi
+done
+#echo $DEVNODE
+if [ "$DEVNODE"x == ""x ];then
+    echo "device find error"
+    exit 1
+fi
+FSTYPE=`lsblk -f $DEVNODE | tail -1 | awk '{print $2}'`
+#echo $DEVNODE  $FSTYPE
+CMD=fsck."${FSTYPE}"
+echo $CMD $*
+$CMD $*
+exit $?
