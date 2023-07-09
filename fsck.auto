@@ -1,5 +1,8 @@
 #!/bin/bash
 #echo $*
+
+export PATH=${PATH:-/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin}
+
 for idx in 0 $(seq $#); do
     name=`eval echo -n "$"$idx`
     if [ -b $name ];then
