@@ -11,7 +11,14 @@ if [ "$DEVNODE"x == ""x ];then
     echo "device find error"
     exit 1
 fi
-FSTYPE=`lsblk -f $DEVNODE | tail -1 | awk '{print $2}'`
+if which lsblk >/dev/null; then
+    FSTYPE=$(lsblk -f $DEVNODE | tail -1 | awk '{print $2}')
+elif which blkid >/dev/null; then
+    FSTYPE=$(blkid $DEVNODE | sed -ne 's/.* TYPE="\([^"]*\)" .*/\1/p')
+else
+    echo "ERROR: lsblk or blkid is required, abort"
+    exit 1
+fi
 #echo $DEVNODE  $FSTYPE
 CMD=fsck."${FSTYPE}"
 echo $CMD $*
