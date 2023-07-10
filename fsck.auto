@@ -25,9 +25,9 @@ if [ "x$DEVNODE" = "x" ]; then
     exit 1
 fi
 if which lsblk >/dev/null; then
-    FSTYPE=$(lsblk -f "$DEVNODE" | tail -1 | awk '{print $2}')
+    FSTYPE=$(command lsblk -f "$DEVNODE" | tail -1 | awk '{print $2}')
 elif which blkid >/dev/null; then
-    FSTYPE=$(blkid "$DEVNODE" | sed -ne 's/.* TYPE="\([^"]*\)" .*/\1/p')
+    FSTYPE=$(command blkid -p "$DEVNODE" -o full | sed -ne 's/.* TYPE="\([^"]*\)" .*/\1/p')
 else
     echo "ERROR: lsblk and blkid missing but one of them is required, abort"
     exit 1
