@@ -1,19 +1,47 @@
 #!/bin/bash
-#echo $*
+#
+# Copyright (c) 2020, Suchao Wang aka blaider@github
+# Copyright (c) 2023, Roberto A. Foglietta <roberto.foglietta@gmail.com>
+#                     Released under MIT license terms
+#
+#i#############################################################################
+
+#echo "params: '$*'" #debug
+
+export PATH=${PATH:-/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin}
+
+if ! which which >/dev/null; then
+    which() { 
+        for i in $(echo "$PATH" | tr : ' '); do
+            if [ -x "$i/$1" ]; then echo "$i/$1"; return 0; fi;
+        done
+        return 1
+    }
+fi
+
 for idx in 0 $(seq $#); do
-    name=`eval echo -n "$"$idx`
-    if [ -b $name ];then
-	DEVNODE=$name
+    name=$(eval echo -n "\$$idx")
+    if [ -b "$name" ]; then
+	DEVNODE="$name"
     fi
 done
-#echo $DEVNODE
-if [ "$DEVNODE"x == ""x ];then
+
+#echo "devnode: '$DEVNODE'" #debug
+if [ "x$DEVNODE" = "x" ]; then
     echo "device find error"
     exit 1
 fi
-FSTYPE=`lsblk -f $DEVNODE | tail -1 | awk '{print $2}'`
-#echo $DEVNODE  $FSTYPE
-CMD=fsck."${FSTYPE}"
-echo $CMD $*
-$CMD $*
+if which lsblk >/dev/null; then
+    FSTYPE=$(command lsblk -f "$DEVNODE" -ro FSTYPE | grep -v FSTYPE)
+elif which blkid >/dev/null; then
+    FSTYPE=$(command blkid -p "$DEVNODE" -o full | sed -ne 's/.* TYPE="\([^"]*\)" .*/\1/p')
+else
+    echo "ERROR: lsblk and blkid missing but one of them is required, abort"
+    exit 1
+fi
+
+#echo "devnode: '$DEVNODE', fstype: '$FSTYPE'" #debug
+CMD="fsck.${FSTYPE}"
+echo "executing: '$CMD $*'"
+eval $CMD $*
 exit $?
